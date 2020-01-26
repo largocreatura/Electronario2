@@ -1,0 +1,31 @@
+const int led1=8;
+const int led2=7;
+
+unsigned long currentMillis=0;
+unsigned long previousMillis1=0;
+unsigned long previousMillis2=0;
+
+const int interval1=500;
+const int interval2=1000;
+int ledState1=LOW; 
+int ledState2=LOW; 
+
+void setup() {
+  pinMode(led1, OUTPUT);
+  pinMode(led2, OUTPUT);
+}
+
+void loop() {
+  currentMillis = millis();
+  if(currentMillis >= (previousMillis1+interval1)){ //(500 >= (0+500))? Si //2. 998,999,1000! (1000 >= 500+500)? Si
+    previousMillis1=currentMillis; //1.previousMillis1 = 500 //2. previousMillis1= 1000
+    ledState1 = !ledState1; //1.HIGH //2.LOW....
+    digitalWrite(led1,ledState1); //Enciende //2.Apaga...
+    }
+
+  if(currentMillis >= (previousMillis2+interval2)){
+    previousMillis2=currentMillis;
+    ledState2 = !ledState2;
+    digitalWrite(led2,ledState2);
+    }
+}
