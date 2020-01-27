@@ -1,0 +1,86 @@
+const int button = 2;
+
+const int led1 =  8;
+const int led2 =  7;
+const int toggleLed = 6;
+
+unsigned long currentMillis = 0;
+unsigned long previousMillis1 = 0;
+unsigned long previousMillis2 = 0;
+
+long OnTime1 = 400;
+long OnTime2 = 750;
+
+long OffTime1 = 400;
+long OffTime2 = 750;
+
+int ledState1 = LOW;
+int ledState2 = LOW;
+
+int buttonDebounce = 20; //tiempo en ms para evitar rebotes
+int toggleLedState = LOW; 
+volatile int buttonFlag=0;
+int previousState = HIGH; //Estado de la última pulsación
+unsigned int previousPress; //Tiempo de la última pulsación
+
+void setup() 
+{
+  pinMode(led1, OUTPUT);      
+  pinMode(led2, OUTPUT);
+  pinMode(toggleLed, OUTPUT);
+  pinMode(button, INPUT_PULLUP); 
+  attachInterrupt(digitalPinToInterrupt(button), button_ISR, CHANGE);     
+}
+void button_ISR()
+{
+  buttonFlag = 1;
+}
+void loop()
+{
+  currentMillis = millis();
+    
+  if((ledState1 == HIGH) && (currentMillis - previousMillis1 >= OnTime1))
+  {
+    ledState1 = LOW;
+    previousMillis1 = currentMillis;
+    digitalWrite(led1, ledState1);
+  }
+  else if ((ledState1 == LOW) && (currentMillis - previousMillis1 >= OffTime1))
+  {
+    ledState1 = HIGH;
+    previousMillis1 = currentMillis;
+    digitalWrite(led1, ledState1);
+  }
+
+    if((ledState2 == HIGH) && (currentMillis - previousMillis2 >= OnTime2))
+  {
+    ledState2 = LOW;
+    previousMillis2 = currentMillis;
+    digitalWrite(led2, ledState2);
+  }
+  else if ((ledState2 == LOW) && (currentMillis - previousMillis2 >= OffTime2))
+  {
+    ledState2 = HIGH;
+    previousMillis2 = currentMillis;
+    digitalWrite(led2, ledState2);
+  }
+  
+  if(buttonFlag==1) //Condicionales encadenados para cambiar el estado del led en función de que pulsemos el botón interrupción
+  {
+    if((millis() - previousPress) > buttonDebounce) //1. (1200 - 0 > 20)? Si
+    {
+      previousPress = millis(); //1. previousPress=1200;
+      if(digitalRead(button) == LOW && previousState == HIGH) //1. Comprueba si la entrada del botón está recibiendo 0V y si hubo una pulsación anterior
+      {
+        toggleLedState =! toggleLedState; //1. Cambiamos el estado del led
+        digitalWrite(toggleLed, toggleLedState);// 1. Apagamos o encendemos el led
+        previousState = LOW;//1. Cambiamos el estado previo de pulsación a LOW para pasar a la segunda parte del condicional
+      }
+      else if(digitalRead(button) == HIGH && previousState == LOW)
+      {
+        previousState = HIGH;
+      }
+      buttonFlag = 0; //Cerramos la comprobación, no se vuelve a activar hasta que se pulse el botón
+    }
+  }
+}
